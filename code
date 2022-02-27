@@ -1,0 +1,183 @@
+#!/usr/bin/python
+# import modules
+import RPi.GPIO as GPIO
+import time
+import datetime
+from pprint import pprint
+from multiprocessing import Process
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+GPIO.setmode(GPIO.BCM)
+
+scope = ["https://spreadsheets.google.com/feeds","https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
+
+creds = ServiceAccountCredentials.from_json_keyfile_name("creds.json", scope)
+
+client = gspread.authorize(creds)
+sheet = client.open("Halloween").sheet1  # Open the spreadsheet
+data = sheet.get_all_records()  # Get a list of all records
+# set sleep times
+SleepTimeS = 0.2
+SleepTimeL = 0.5
+
+#row = sheet.row_values(3)
+
+# init list with pin numbers
+
+# control for motor one
+ControlPin1 = [5, 6, 13, 19]
+
+# control for motor two
+ControlPin2 = [4, 21, 17, 27]
+
+# control for motor three
+ControlPin3 = [22, 23, 24, 25]
+
+# control for motor four
+ControlPin4 = [14, 15, 8, 7]
+
+
+GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+
+# loop through pins and set mode and output to 0
+for pin in ControlPin1:
+    GPIO.setup(pin,GPIO.OUT)
+    GPIO.output(pin,0)
+
+for pin in ControlPin2:
+    GPIO.setup(pin,GPIO.OUT)
+    GPIO.output(pin,0)
+
+for pin in ControlPin3:
+    GPIO.setup(pin,GPIO.OUT)
+    GPIO.output(pin,0)
+
+for pin in ControlPin4:
+    GPIO.setup(pin,GPIO.OUT)
+    GPIO.output(pin,0)
+
+# set steps for stepper motor
+seq1 = [ [1,0,0,0],
+	[1,1,0,0],
+	[0,1,0,0],
+	[0,1,1,0],
+	[0,0,1,0],
+	[0,0,1,1],
+	[0,0,0,1],
+	[1,0,0,1] ]
+
+
+seq2 = [ [1,0,0,1],
+	[0,0,0,1],
+	[0,0,1,1],
+	[0,0,1,0],
+	[0,1,1,0],
+	[0,1,0,0],
+	[1,1,0,0],
+	[1,0,0,0] ]
+
+
+# dispense candy one	
+try:
+	while True:
+		now = datetime.datetime.now()
+		now_format = now.strftime("%Y-%m-%d %H:%M:%S")		
+		GPIO.setmode (GPIO.BCM)
+		GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+		input_state = GPIO.input(12)
+		if input_state == True:
+			print("Boom boom Bill")
+		elif input_state == False:
+			insertRow = [now_format, "dots",1,0,0,0]
+			sheet.insert_row(insertRow, 2) 
+			print("dots")  
+			#Process(target=dots).start()
+			for i in range(588):
+				for halfstep in range(8):
+					for pin in range(4):
+						GPIO.output(ControlPin2[pin], seq1[halfstep][pin])
+					time.sleep(0.001)
+			for i in range(258):
+				for halfstep in range(8):
+					for pin in range(4):
+						GPIO.output(ControlPin2[pin], seq2[halfstep][pin])
+					time.sleep(0.001)
+			
+			time.sleep(0.1)
+
+# dispense candy two
+		now = datetime.datetime.now()
+		now_format = now.strftime("%Y-%m-%d %H:%M:%S")		
+		GPIO.setmode (GPIO.BCM)
+		GPIO.setup(26, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+		input_state = GPIO.input(26)
+		if input_state == True:
+			print("Boom boom Bill")
+		elif input_state == False:
+			insertRow = [now_format, "kitkat",0,1,0,0]
+			sheet.insert_row(insertRow, 2) 
+			print("kitkat")  
+			#Process(target=dots).start()
+			for i in range(688):
+				for halfstep in range(8):
+					for pin in range(4):
+						GPIO.output(ControlPin1[pin], seq2[halfstep][pin])
+					time.sleep(0.001)
+			for i in range(258):
+				for halfstep in range(8):
+					for pin in range(4):
+						GPIO.output(ControlPin1[pin], seq1[halfstep][pin])
+					time.sleep(0.001)
+			
+			time.sleep(0.1)
+
+		now = datetime.datetime.now()
+		now_format = now.strftime("%Y-%m-%d %H:%M:%S")		
+		GPIO.setmode (GPIO.BCM)
+		GPIO.setup(16, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+		input_state = GPIO.input(16)
+		if input_state == True:
+			print("Boom boom Bill")
+		elif input_state == False:
+			insertRow = [now_format, "nerds",0,0,1,0]
+			sheet.insert_row(insertRow, 2) 
+			print("nerds")  
+			#Process(target=nerds).start()
+			for i in range(588):
+				for halfstep in range(8):
+					for pin in range(4):
+						GPIO.output(ControlPin3[pin], seq1[halfstep][pin])
+					time.sleep(0.001)
+			for i in range(258):
+				for halfstep in range(8):
+					for pin in range(4):
+						GPIO.output(ControlPin3[pin], seq2[halfstep][pin])
+					time.sleep(0.001)
+			
+			time.sleep(0.1)
+		now = datetime.datetime.now()
+		now_format = now.strftime("%Y-%m-%d %H:%M:%S")		
+		GPIO.setmode (GPIO.BCM)
+		GPIO.setup(1, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+		input_state = GPIO.input(1)
+		if input_state == True:
+			print("Boom boom Bill")
+		elif input_state == False:
+			insertRow = [now_format, "twix",0,0,0,1]
+			sheet.insert_row(insertRow, 2) 
+			print("twix")  
+			#Process(target=twix).start()
+			for i in range(612):
+				for halfstep in range(8):
+					for pin in range(4):
+						GPIO.output(ControlPin4[pin], seq2[halfstep][pin])
+					time.sleep(0.001)
+			for i in range(258):
+				for halfstep in range(8):
+					for pin in range(4):
+						GPIO.output(ControlPin4[pin], seq1[halfstep][pin])
+					time.sleep(0.001)
+
+except KeyboardInterrupt:
+	GPIO.cleanup()
+	print ("Done")
